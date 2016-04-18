@@ -1,0 +1,18 @@
+{
+  "name": "9oclock-cms",
+  "version": "0.0.1",
+  "url": "https://github.com/9oclock/9oclock-cms/issues",
+  "license": "MIT",
+  "author": {
+    "name": "Sergio Moura",
+    "email": "sergio@Moura.us",
+    "url": "http://moura.us"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/9oclock/9oclock-cms.git"
+  },
+  "dependencies": {
+    "dispatchjs": "git+https://github.com/lsmoura/dispatchjs.git"
+  }
+}
