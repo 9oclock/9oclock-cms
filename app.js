@@ -3,8 +3,15 @@
 var fs = require('fs');
 var path = require('path');
 var dispatch = require('dispatchjs');
+var tiptoe = require('tiptoe');
 
 var config = {};
+var defaultSiteSettings = {
+	"url": "",
+	"title": "New Site",
+	"default-author": "Admin",
+	"layout": "default"
+};
 
 dispatch.setOption('debug', true);
 
@@ -33,9 +40,56 @@ dispatch.map('GET', '/site/info/([^/]*)', function(req, res) {
 });
 
 dispatch.map('POST', '/site/new$', function(req, res) {
-	console.log(this);
+	// TODO: Validate post data.
+	var siteName = this.fields.siteName;
+	console.log("Trying to create site: %s", siteName);
+	var self = this;
 
-	this('{}', { 'Content-Type': 'application/json'});
+	var siteRoot = path.join(config['data'], 'sites', siteName);
+
+	fs.stat(siteRoot, function(err, stats){
+		if (!err) {
+			self(JSON.stringify({ "error": "Requested new site already exists.", "request": self.matches[0] }), { 'Content-Type': 'application/json'});
+			return;
+		}
+
+		/*
+			Create site structure:
+			...
+			data
+			+ sites
+			+ + siteName
+			+ + - public
+			+ + + source
+			+ + + - _posts
+			+ + + - _img
+			+ + - site.json (json file, not directory)
+		*/
+
+		tiptoe(
+			function() {
+				fs.mkdir(siteRoot, this);
+			},
+			function() {
+				fs.mkdir(path.join(siteRoot, 'public'), this.parallel());
+				fs.mkdir(path.join(siteRoot, 'source'), this.parallel());
+			},
+			function() {
+				fs.mkdir(path.join(siteRoot, 'source', '_posts'), this.parallel());
+				fs.mkdir(path.join(siteRoot, 'source', 'img'), this.parallel());
+
+				var siteSettings = JSON.parse(JSON.stringify(defaultSiteSettings));
+				siteSettings.url = siteName;
+
+				fs.writeFile(path.join(siteRoot, 'site.json'), JSON.stringify(siteSettings), 'utf-8', this);
+			},
+			function(err) {
+				if (err) { console.error(err); throw(err); }
+				self(JSON.stringify({ "success": true, "siteName": siteName }), { 'Content-Type': 'application/json'});
+				console.log("Creation of %s finished.", siteName);
+			}
+		);
+	});
 });
 
 dispatch.map(404, function() {
