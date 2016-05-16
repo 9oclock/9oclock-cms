@@ -13,6 +13,7 @@
     "url": "https://github.com/9oclock/9oclock-cms.git"
   },
   "dependencies": {
-    "dispatchjs": "git+https://github.com/lsmoura/dispatchjs.git"
+    "dispatchjs": "git+https://github.com/lsmoura/dispatchjs.git",
+    "metalsmith": "^2.1.0"
   }
 }
