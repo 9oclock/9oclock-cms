@@ -48,6 +48,7 @@ function getPostsForSite(siteName, callback) {
 }
 
 /**
+ * Retrieves the site information
  * Callback in the format function(err, siteInfo)
  */
 function getSiteInfo(siteName, callback) {
@@ -78,12 +79,11 @@ dispatch.map('GET', '/site/info/([^/]*)', function(req, res) {
 	var siteName = this.matches[1];
 	var self = this;
 
-	fs.readFile(path.join(config['data'], 'sites', siteName, 'site.json'), 'utf-8', function(err, data) {
-		if (err) {
+	getSiteInfo(siteName, function(err, siteInfo) {
+		if (err)
 			self(JSON.stringify({ "success": false, "error": "Requested site does not exists.", "request": self.matches[0] }), { 'Content-Type': 'application/json'});
-			return;
-		}
-		self(data, { 'Content-Type': 'application/json'})
+		else
+			self(JSON.stringify(siteInfo), { 'Content-Type': 'application/json'});
 	});
 });
 
@@ -169,8 +169,6 @@ dispatch.map('POST', '/site/posts/([^/]*)/save', function(req, res) {
 			finish(obj);
 		});
 	}
-
-	//self(JSON.stringify({ success: false, error: "we're testing this." }), { 'Content-Type': 'application/json'});
 });
 
 dispatch.map('GET', '/site/posts/([^/]*)', function(req, res) {
