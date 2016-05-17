@@ -5,6 +5,7 @@ var path = require('path');
 var dispatch = require('dispatchjs');
 var tiptoe = require('tiptoe');
 var async = require('async');
+var build = require('./builder');
 
 var config = {};
 var defaultSiteSettings = {
@@ -43,6 +44,20 @@ function getPostsForSite(siteName, callback) {
 		function() {
 			setImmediate(callback, answer);
 		});
+	});
+}
+
+/**
+ * Callback in the format function(err, siteInfo)
+ */
+function getSiteInfo(siteName, callback) {
+	fs.readFile(path.join(config['data'], 'sites', siteName, 'site.json'), 'utf-8', function(err, data) {
+		if (err) {
+			callback && callback(err);
+			return;
+		}
+
+		callback && callback(null, JSON.parse(data));
 	});
 }
 
@@ -163,6 +178,27 @@ dispatch.map('GET', '/site/posts/([^/]*)', function(req, res) {
 
 	getPostsForSite(this.matches[1], function(answer) {
 		self(JSON.stringify(answer), { 'Content-Type': 'application/json'});
+	});
+});
+
+dispatch.map('GET', '/site/build/([^/]*)', function(req, res) {
+	var self = this;
+	var siteName = this.matches[1];
+
+	getSiteInfo(siteName, function(err, siteInfo) {
+		if (err) {
+			self(JSON.stringify({ success: false, error: err }), { 'Content-Type': 'application/json'});
+			return;
+		}
+		var rootDir = path.join(config['data'], 'sites', siteName);
+		siteInfo.templatePath = path.join(config['data'], 'themes', 'default');
+
+		build(rootDir, siteInfo, function(err) {
+			if (err)
+				self(JSON.stringify({ success: false, error: err }), { 'Content-Type': 'application/json'});
+			else
+				self(JSON.stringify({ success: true }), { 'Content-Type': 'application/json'});
+		});
 	});
 });
 

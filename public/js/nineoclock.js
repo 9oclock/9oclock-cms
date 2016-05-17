@@ -211,6 +211,13 @@ function nineoclock_init(jQuery) {
 		jQuery('#' + obj.data('sectionid')).show();
 	});
 
+	jQuery('#site-build').on('click', function(event) {
+		jQuery.ajax('/site/build/' + nineoclock.currentSite.name)
+		.done(function(data) {
+			console.log(data);
+		});
+	});
+
 	// Load sites
 	nineoclock.updateSites();
 };
