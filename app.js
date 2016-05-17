@@ -32,7 +32,7 @@ dispatch.map('GET', '/site/info/([^/]*)', function(req, res) {
 
 	fs.readFile(path.join(config['data'], 'sites', siteName, 'site.json'), 'utf-8', function(err, data) {
 		if (err) {
-			self(JSON.stringify({ "error": "Requested site does not exists.", "request": self.matches[0] }), { 'Content-Type': 'application/json'});
+			self(JSON.stringify({ "success": false, "error": "Requested site does not exists.", "request": self.matches[0] }), { 'Content-Type': 'application/json'});
 			return;
 		}
 		self(data, { 'Content-Type': 'application/json'})
@@ -49,7 +49,8 @@ dispatch.map('POST', '/site/new$', function(req, res) {
 
 	fs.stat(siteRoot, function(err, stats){
 		if (!err) {
-			self(JSON.stringify({ "error": "Requested new site already exists.", "request": self.matches[0] }), { 'Content-Type': 'application/json'});
+			var answer = { "success": false, "error": "Requested new site already exists.", "request": self.matches[0] };
+			self(JSON.stringify(answer), { 'Content-Type': 'application/json'});
 			return;
 		}
 
