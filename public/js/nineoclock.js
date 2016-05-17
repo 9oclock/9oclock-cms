@@ -151,10 +151,13 @@ function nineoclock_init(jQuery) {
 	});
 
 	jQuery('#post-save').on('click', function(event) {
+		// TODO: Validate filename
+		// TODO: Validate slug
+
 		// Prepare the contents
 		var contents = '---\n';
 		contents += 'title: "' + jQuery('#post-title').val() + '"\n';
-		contents += 'date: "' + jQuery('#post-date').val() + '"\n';
+		contents += 'date: ' + jQuery('#post-date').val() + '\n';
 		contents += 'slug: "' + jQuery('#post-slug').val() + '"\n';
 
 		contents += 'categories:\n';
