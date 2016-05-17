@@ -7,3 +7,11 @@
 .post-action {
 	cursor: pointer;
 }
+
+#footer {
+	border-top: 1px solid #ddd;
+	margin-top: 1em;
+	padding: 0.5em 1em;
+	background-color: #eee;
+	font-size: x-small;
+}
