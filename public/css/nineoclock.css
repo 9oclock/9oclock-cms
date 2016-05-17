@@ -3,3 +3,7 @@
 .site-section {
 	display: none;
 }
+
+.post-action {
+	cursor: pointer;
+}

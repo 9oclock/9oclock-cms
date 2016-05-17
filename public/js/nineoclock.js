@@ -15,8 +15,41 @@ function nineoclock_init(jQuery) {
 			console.log(data);
 			nineoclock.currentSite.settings = data;
 
+			nineoclock.loadPosts(siteName);
 			jQuery('#topactions').show();
 			jQuery('#sitetitle').html(siteName);
+		});
+	};
+
+	nineoclock.loadPosts = function(siteName, callback) {
+		jQuery.ajax('/site/posts/' + siteName)
+		.done(function(answer) {
+			if (answer.hasOwnProperty('success') && answer.success == false) {
+				var text = "Error retrieving posts for " + siteName;
+				if (answer.hasOwnProperty('error')) text += "\n" + answer.error;
+				window.alert(text);
+				return;
+			}
+
+			nineoclock.currentSite.posts = answer.posts;
+
+			jQuery('#posts-table tbody').empty();
+
+			var i;
+			for (i = 0; i < nineoclock.currentSite.posts.length; i++) {
+				var text = nineoclock.currentSite.posts[i].contents;
+				var meta = jsyaml.loadFront(text);
+				var postname = nineoclock.currentSite.posts[i].post;
+				var line = '<tr class="post-entry" data-postname="' + postname + '">';
+				line += '<td>' + meta.title + '</td>';
+				line += '<td>' + meta.date + '</td>';
+				line += '<td>';
+				line += '<span class="glyphicon glyphicon-edit post-edit post-action" data-postname="' + postname + '"></span> ';
+				line += '<span class="glyphicon glyphicon-trash post-delete post-action" data-postname="' + postname + '"></span> ';
+				line += '</td>';
+				line += '</tr>';
+				jQuery('#posts-table tbody').append(line);
+			}
 		});
 	};
 

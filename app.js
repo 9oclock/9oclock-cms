@@ -4,6 +4,7 @@ var fs = require('fs');
 var path = require('path');
 var dispatch = require('dispatchjs');
 var tiptoe = require('tiptoe');
+var async = require('async');
 
 var config = {};
 var defaultSiteSettings = {
@@ -12,6 +13,38 @@ var defaultSiteSettings = {
 	"default-author": "Admin",
 	"layout": "default"
 };
+
+function getPostsForSite(siteName, callback) {
+	var postsPath = path.join(config['data'], 'sites', siteName, 'source', '_posts');
+
+	var answer = {};
+
+	fs.readdir(postsPath, function(err, files) {
+		if (err) {
+			console.error(err);
+			answer = {
+				"success": false,
+				"error": err
+			};
+			return(setImmediate(callback, answer));
+		}
+
+		answer = {
+			"success": true,
+			"posts": []
+		};
+		async.eachSeries(files, function(fn, cb) {
+			fs.readFile(path.join(postsPath, fn), 'utf-8', function(err, data) {
+				var obj = { "post": fn, "contents": data };
+				answer.posts.push(obj);
+				cb();
+			});
+		},
+		function() {
+			setImmediate(callback, answer);
+		});
+	});
+}
 
 dispatch.setOption('debug', true);
 
@@ -36,6 +69,14 @@ dispatch.map('GET', '/site/info/([^/]*)', function(req, res) {
 			return;
 		}
 		self(data, { 'Content-Type': 'application/json'})
+	});
+});
+
+dispatch.map('GET', '/site/posts/([^/]*)', function(req, res) {
+	var self = this;
+
+	getPostsForSite(this.matches[1], function(answer) {
+		self(JSON.stringify(answer), { 'Content-Type': 'application/json'});
 	});
 });
 
