@@ -1,7 +1,7 @@
-9OClock CMS
-===========
+9 O'Clock CMS
+=============
 
-The aim of this project is to provide a web and command-line interfaces for creating and publishing static sites, powered by metalsmith.
+The aim of this project is to provide a web and command-line interfaces for creating and publishing static sites, powered by [metalsmith](http://metalsmith.io).
 
 Usage
 -----
