@@ -9,6 +9,7 @@ var collections = require('metalsmith-collections');
 
 // Using forked repo
 var permalinks = require('metalsmith-permalinks');
+var blog = require('metalsmith-blog');
 
 var build = function(root, options, callback) {
 
@@ -63,6 +64,10 @@ var build = function(root, options, callback) {
 	.use(collections(collections_settings))
 	.use(markdown())
 	.use(permalinks(permalink_settings))
+	.use(blog())
+	.use(blog.categories())
+	.use(blog.tags())
+	.use()
 	.build(function(err) {
 		if (err) { console.error(err); }
 		callback && callback(err);

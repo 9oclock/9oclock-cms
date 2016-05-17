@@ -5,9 +5,8 @@ var path = require('path');
 var dispatch = require('dispatchjs');
 var tiptoe = require('tiptoe');
 var async = require('async');
-var build = require('./builder');
+var lib = require('./lib');
 
-var config = {};
 var defaultSiteSettings = {
 	"url": "",
 	"title": "New Site",
@@ -16,6 +15,7 @@ var defaultSiteSettings = {
 };
 
 function getPostsForSite(siteName, callback) {
+	var config = lib.getConfig();
 	var postsPath = path.join(config['data'], 'sites', siteName, 'source', '_posts');
 
 	var answer = {};
@@ -47,25 +47,11 @@ function getPostsForSite(siteName, callback) {
 	});
 }
 
-/**
- * Retrieves the site information
- * Callback in the format function(err, siteInfo)
- */
-function getSiteInfo(siteName, callback) {
-	fs.readFile(path.join(config['data'], 'sites', siteName, 'site.json'), 'utf-8', function(err, data) {
-		if (err) {
-			callback && callback(err);
-			return;
-		}
-
-		callback && callback(null, JSON.parse(data));
-	});
-}
-
 dispatch.setOption('debug', true);
 
 dispatch.map('GET', '/sites$', function() {
 	var self = this;
+	var config = lib.getConfig();
 
 	fs.readdir(path.join(config['data'], 'sites'), function(err, files) {
 		var sites = [];
@@ -79,7 +65,7 @@ dispatch.map('GET', '/site/info/([^/]*)', function(req, res) {
 	var siteName = this.matches[1];
 	var self = this;
 
-	getSiteInfo(siteName, function(err, siteInfo) {
+	lib.getSiteInfo(siteName, function(err, siteInfo) {
 		if (err)
 			self(JSON.stringify({ "success": false, "error": "Requested site does not exists.", "request": self.matches[0] }), { 'Content-Type': 'application/json'});
 		else
@@ -90,6 +76,7 @@ dispatch.map('GET', '/site/info/([^/]*)', function(req, res) {
 dispatch.map('POST', '/site/posts/([^/]*)/save', function(req, res) {
 	var siteName = this.matches[1];
 	var self = this;
+	var config = lib.getConfig();
 
 	var finish = function(data) {
 		self(JSON.stringify(data), { 'Content-Type': 'application/json'});
@@ -183,20 +170,11 @@ dispatch.map('GET', '/site/build/([^/]*)', function(req, res) {
 	var self = this;
 	var siteName = this.matches[1];
 
-	getSiteInfo(siteName, function(err, siteInfo) {
-		if (err) {
+	lib.build(siteName, function(err) {
+		if (err)
 			self(JSON.stringify({ success: false, error: err }), { 'Content-Type': 'application/json'});
-			return;
-		}
-		var rootDir = path.join(config['data'], 'sites', siteName);
-		siteInfo.templatePath = path.join(config['data'], 'themes', 'default');
-
-		build(rootDir, siteInfo, function(err) {
-			if (err)
-				self(JSON.stringify({ success: false, error: err }), { 'Content-Type': 'application/json'});
-			else
-				self(JSON.stringify({ success: true }), { 'Content-Type': 'application/json'});
-		});
+		else
+			self(JSON.stringify({ success: true }), { 'Content-Type': 'application/json'});
 	});
 });
 
@@ -205,6 +183,7 @@ dispatch.map('POST', '/site/new$', function(req, res) {
 	var siteName = this.fields.siteName;
 	console.log("Trying to create site: %s", siteName);
 	var self = this;
+	var config = lib.getConfig();
 
 	var siteRoot = path.join(config['data'], 'sites', siteName);
 
@@ -258,14 +237,6 @@ dispatch.map(404, function() {
 	this('Not here.', { 'Content-Type': 'text/plain' });
 });
 
-function loadConfig(callback) {
-	fs.readFile(path.join(__dirname, 'config.json'), 'utf-8', function(err, data) {
-		if (err) throw(err);
-		config = JSON.parse(data);
-		callback && callback();
-	});
-}
-
-loadConfig(function() {
+lib.loadConfig(function() {
 	dispatch(3000, { serve_static: true });
 });
