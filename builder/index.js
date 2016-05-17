@@ -3,6 +3,9 @@
 var path = require('path');
 var metalsmith = require('metalsmith');
 
+// Metalsmith modules
+var markdown = require('metalsmith-markdown');
+
 var build = function(root, options, callback) {
 
 	//var source = path.join(root, 'source');
@@ -17,6 +20,7 @@ var build = function(root, options, callback) {
 	.metadata(metadata)
 	.source('source')
 	.destination('public')
+	.use(markdown())
 	.build(function(err) {
 		if (err) { console.error(err); }
 		callback && callback(err);
