@@ -3,6 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>9 O'Clock CMS</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 	<link rel="stylesheet" href="/css/nineoclock.css">
@@ -24,11 +25,13 @@
 					<a class="navbar-brand" href="#">9 O'Clock</a>
 			</div>
 			<div class="collapse navbar-collapse" id="9oc-navbar">
-				<ul class="nav navbar-nav">
-					<li><a href="#">Home</a></li>
-					<li><a href="#">Posts</a></li>
-					<li><a href="#">Pages</a></li>
-					<li><a href="#">Settings</a></li>
+				<ul class="nav navbar-nav" id="topactions" style="display: none">
+					<li><a href="#" class="site-display-section" data-sectionid="home"><span class="glyphicon glyphicon-home" aria-hidden="true"></span> Home</a></li>
+					<li><a href="#" class="site-display-section" data-sectionid="posts">Posts</a></li>
+					<li><a href="#" class="site-display-section" data-sectionid="pages">Pages</a></li>
+					<li><a href="#" class="site-display-section" data-sectionid="media"><span class="glyphicon glyphicon-film" aria-hidden="true"></span> Media</a></li>
+					<li><a href="#" class="site-display-section" data-sectionid="build">Build</a></li>
+					<li><a href="#" class="site-display-section" data-sectionid="settings"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Settings</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" id="topsites"><span id="currentsite">-site placeholder-</span> <span class="caret"></span></a>
@@ -41,7 +44,31 @@
 				</ul>
 			</div>
 		</nav>
-		<div id="contents"></div>
+		<div class="container-fluid">
+			<h2 id="sitetitle"></h2>
+			<div id="contents">
+				<div id="home" class="site-section container">Home</div>
+				<div id="posts" class="site-section container">
+					<h3>Posts</h3>
+					<table class="table">
+						<thead>
+						</thead>
+						<tbody>
+						</tbody>
+						<tfoot>
+						</tfoot>
+					</table>
+					<div class="container-fluid pull-right">
+						<button class="btn btn-default" id="post-new">New</button>
+						<button class="btn btn-default" id="post-reload">Reload</button>
+					</div>
+				</div>
+				<div id="pages" class="site-section container">Pages</div>
+				<div id="media" class="site-section container">Media</div>
+				<div id="build" class="site-section container">Build</div>
+				<div id="settings" class="site-section container">Settings</div>
+			</div>
+		</div>
 		<footer id="footer">Powered by 9 O'Clock CMS</footer>
 	</div>
 </body>
