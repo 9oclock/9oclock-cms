@@ -72,6 +72,92 @@ dispatch.map('GET', '/site/info/([^/]*)', function(req, res) {
 	});
 });
 
+dispatch.map('POST', '/site/posts/([^/]*)/save', function(req, res) {
+	var siteName = this.matches[1];
+	var self = this;
+
+	var finish = function(data) {
+		self(JSON.stringify(data), { 'Content-Type': 'application/json'});
+	};
+
+	console.log("saving post for %s:", siteName);
+	var oldFN = this.fields.post['oldfilename'];
+	var filename = this.fields.post['filename'];
+	var contents = this.fields.post['contents'];
+
+	var postsPath = path.join(config['data'], 'sites', siteName, 'source', '_posts');
+
+	if (oldFN == '') {
+		// New Post
+		fs.stat(path.join(postsPath, filename), function(err, stats) {
+			if (!err) {
+				finish({ success: false, error: "File already exists" });
+				return;
+			}
+			fs.writeFile(path.join(postsPath, filename), contents, 'utf-8', function(err) {
+				if (err) {
+					finish({ success: false, error: err });
+					return;
+				}
+
+				var obj = {
+					success: true,
+					"post": filename,
+					"contents": contents
+				};
+				finish(obj);
+			});
+		});
+	}
+	else if (oldFN != filename) {
+		// Rename Post
+		fs.stat(path.join(postsPath, filename), function(err, stats) {
+			if (!err) {
+				finish({ success: false, error: "File already exists" });
+				return;
+			}
+
+			// Save post
+			fs.writeFile(path.join(postsPath, filename), contents, 'utf-8', function(err) {
+				if (err) {
+					finish({ success: false, error: err });
+					return;
+				}
+
+				var obj = {
+					"success": true,
+					"post": filename,
+					"contents": contents,
+					"removed": oldFN
+				};
+
+				// Remove old post
+				fs.unlink(path.join(postsPath, oldFN));
+
+				finish(obj);
+			});
+		});
+	}
+	else {
+		// Just save post
+		fs.writeFile(path.join(postsPath, filename), contents, 'utf-8', function(err) {
+			if (err) {
+				finish({ success: false, error: err });
+				return;
+			}
+
+			var obj = {
+				success: true,
+				"post": filename,
+				"contents": contents
+			};
+			finish(obj);
+		});
+	}
+
+	//self(JSON.stringify({ success: false, error: "we're testing this." }), { 'Content-Type': 'application/json'});
+});
+
 dispatch.map('GET', '/site/posts/([^/]*)', function(req, res) {
 	var self = this;
 

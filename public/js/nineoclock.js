@@ -21,6 +21,11 @@ function nineoclock_init(jQuery) {
 		});
 	};
 
+	nineoclock.displayPosts = function() {
+		jQuery('#contents .site-section').hide()
+		jQuery('#posts').show()
+	};
+
 	nineoclock.loadPosts = function(siteName, callback) {
 		jQuery.ajax('/site/posts/' + siteName)
 		.done(function(answer) {
@@ -71,6 +76,21 @@ function nineoclock_init(jQuery) {
 		});
 	}
 
+	// Input Events
+	jQuery('#post-title').focusout(function() {
+		var currentSlug = jQuery('#post-slug').val();
+		var currentFn = jQuery('#post-filename').val();
+
+		var val = jQuery('#post-title').val().toLowerCase().replace(/  /g," ").replace(/ /g, '-');
+
+		if (currentSlug == '') {
+			jQuery('#post-slug').val(val);
+		}
+		if (currentFn == '' && val != '') {
+			jQuery('#post-filename').val(val + '.md');
+		}
+	});
+
 	// Listen to clicks
 	jQuery('#sitelist-dropdown').on('click', '.site-entry', function(event) {
 		var siteName = jQuery(this).data('site');
@@ -100,11 +120,87 @@ function nineoclock_init(jQuery) {
 		});
 	});
 
+	jQuery('#post-new').on('click', function(event) {
+		jQuery('#contents .site-section').hide();
+
+		// TODO: This should not be this ugly.
+		var now = new Date();
+		var dateStr = now.getFullYear();
+		dateStr += '-';
+		dateStr += now.getMonth();
+		dateStr += '-';
+		dateStr += now.getDate();
+		dateStr += ' ';
+		dateStr += now.getHours();
+		dateStr += ':';
+		dateStr += now.getMinutes();
+		dateStr += ':';
+		dateStr += now.getSeconds();
+
+
+		jQuery('#post-date').val(dateStr)
+		jQuery('#post-editor').show();
+		jQuery('#post-title').focus();
+	});
+
 	jQuery('#post-reload').on('click', function(event) {
 		jQuery('#loading-mirror').show();
 		nineoclock.loadPosts(nineoclock.currentSite.name, function() {
 			jQuery('#loading-mirror').hide();
 		});
+	});
+
+	jQuery('#post-save').on('click', function(event) {
+		// Prepare the contents
+		var contents = '---\n';
+		contents += 'title: "' + jQuery('#post-title').val() + '"\n';
+		contents += 'date: "' + jQuery('#post-date').val() + '"\n';
+		contents += 'slug: "' + jQuery('#post-slug').val() + '"\n';
+
+		contents += 'categories:\n';
+		var catStrings = jQuery('#post-categories').val().trim();
+		if (catStrings.length > 0) { 
+			contents += catStrings.split(',').map(function(a) { return("- " + a.trim()); }).join('\n');
+		}
+
+		contents += 'tags:\n';
+		var tagStrings = jQuery('#post-tags').val().trim();
+		if (tagStrings.length > 0) { 
+			contents += tagStrings.split(',').map(function(a) { return("- " + a.trim()); }).join('\n');
+		}
+
+		contents += '---\n' + jQuery('#post-contents').val();
+
+		// Prepare payload
+		var postData = {
+			'title': jQuery('#post-title').val(),
+			'filename': jQuery('#post-filename').val(),
+			'oldfilename': jQuery('#post-oldfilename').val(),
+			'contents': contents
+		};
+
+		jQuery('#loading-mirror').show();
+
+		// Send it
+		jQuery.ajax({
+			'url': '/site/posts/' + nineoclock.currentSite.name + '/save',
+			'method': 'POST',
+			contentType: 'application/json; charset=utf-8',
+			'data': JSON.stringify({ 'post': postData })
+		})
+		.done(function(data) {
+			jQuery('#loading-mirror').hide();
+			if (data.hasOwnProperty('success') && data.success == false) {
+				var text = "Cannot save post.";
+				if (data.hasOwnProperty('error'))
+					text += "\nReason: " + data.error;
+
+				alert(text);
+				return;
+			}
+			// TODO: Add post to the current post list.
+			nineoclock.displayPosts();
+		})
 	});
 
 	jQuery('#topactions').on('click', '.site-display-section', function(event) {
