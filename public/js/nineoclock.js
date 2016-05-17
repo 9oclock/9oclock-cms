@@ -28,6 +28,7 @@ function nineoclock_init(jQuery) {
 				var text = "Error retrieving posts for " + siteName;
 				if (answer.hasOwnProperty('error')) text += "\n" + answer.error;
 				window.alert(text);
+				callback && callback("Cannot load posts.");
 				return;
 			}
 
@@ -50,6 +51,8 @@ function nineoclock_init(jQuery) {
 				line += '</tr>';
 				jQuery('#posts-table tbody').append(line);
 			}
+
+			callback && callback();
 		});
 	};
 
@@ -94,6 +97,13 @@ function nineoclock_init(jQuery) {
 
 			nineoclock.loadSite(siteName);
 			nineoclock.updateSites();
+		});
+	});
+
+	jQuery('#post-reload').on('click', function(event) {
+		jQuery('#loading-mirror').show();
+		nineoclock.loadPosts(nineoclock.currentSite.name, function() {
+			jQuery('#loading-mirror').hide();
 		});
 	});
 

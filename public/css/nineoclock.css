@@ -15,3 +15,20 @@
 	background-color: #eee;
 	font-size: x-small;
 }
+
+#loading-mirror {
+	display: none;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: rgba(0, 0, 0, 0.75);
+	z-index: 9999;
+}
+
+#loading-mirror img {
+	position: relative;
+	display: block;
+	margin: 0 auto;
+}
