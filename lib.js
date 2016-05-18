@@ -38,7 +38,7 @@ var build = function(siteName, callback) {
 		}
 
 		var rootDir = path.join(config['data'], 'sites', siteName);
-		siteInfo.templatePath = path.join(config['data'], 'themes', 'default');
+		siteInfo.templatePath = path.join(config['data'], 'themes');
 
 		builder(rootDir, siteInfo, function(err) {
 			callback && callback(err);
