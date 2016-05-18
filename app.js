@@ -47,6 +47,38 @@ function getPostsForSite(siteName, callback) {
 	});
 }
 
+function getMediaForSite(siteName, callback) {
+	var config = lib.getConfig();
+	var mediaPath = path.join(config['data'], 'sites', siteName, 'source', 'img');
+
+	var answer = {};
+	fs.readdir(mediaPath, function(err, files) {
+		if (err) {
+			console.error(err);
+			answer = {
+				"success": false,
+				"error": err
+			};
+			return(setImmediate(callback, answer));
+		}
+
+		answer = {
+			"success": true,
+			"media": []
+		};
+		async.eachSeries(files, function(fn, cb) {
+			fs.readFile(path.join(mediaPath, fn), 'utf-8', function(err, data) {
+				var obj = { "filename": fn };
+				answer.media.push(obj);
+				cb();
+			});
+		},
+		function() {
+			setImmediate(callback, answer);
+		});
+	});
+}
+
 dispatch.setOption('debug', true);
 
 dispatch.map('GET', '/sites$', function() {
@@ -161,6 +193,14 @@ dispatch.map('GET', '/site/posts/([^/]*)', function(req, res) {
 	var self = this;
 
 	getPostsForSite(this.matches[1], function(answer) {
+		self(JSON.stringify(answer), { 'Content-Type': 'application/json'});
+	});
+});
+
+dispatch.map('GET', '/site/media/([^/]*)', function(req, res) {
+	var self = this;
+
+	getMediaForSite(this.matches[1], function(answer) {
 		self(JSON.stringify(answer), { 'Content-Type': 'application/json'});
 	});
 });

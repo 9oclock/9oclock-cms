@@ -54,6 +54,7 @@ function nineoclock_init(jQuery) {
 			nineoclock.currentSite.settings = data;
 
 			nineoclock.loadPosts(siteName);
+			nineoclock.loadMedia(siteName);
 			jQuery('#topactions').show();
 			jQuery('#sitetitle').html(siteName);
 		});
@@ -93,6 +94,37 @@ function nineoclock_init(jQuery) {
 				line += '</td>';
 				line += '</tr>';
 				jQuery('#posts-table tbody').append(line);
+			}
+
+			callback && callback();
+		});
+	};
+
+	nineoclock.loadMedia = function(siteName, callback) {
+		jQuery.ajax('/site/media/' + siteName)
+		.done(function(answer) {
+			if (answer.hasOwnProperty('success') && answer.success == false) {
+				var text = "Error retrieving media for " + siteName;
+				if (answer.hasOwnProperty('error')) text += "\n" + answer.error;
+				window.alert(text);
+				callback && callback("Cannot load posts.");
+				return;
+			}
+
+			nineoclock.currentSite.media = answer.media;
+
+			jQuery('#media-table tbody').empty();
+
+			var i;
+			for (i = 0; i < nineoclock.currentSite.media.length; i++) {
+				var media = nineoclock.currentSite.media[i].filename;
+				var line = '<tr class="media-entry" data-filename="' + media + '">';
+				line += '<td>' + media + '</td>';
+				line += '<td>';
+				line += '<span class="glyphicon glyphicon-trash media-delete media-action" data-filename="' + media + '"></span> ';
+				line += '</td>';
+				line += '</tr>';
+				jQuery('#media-table tbody').append(line);
 			}
 
 			callback && callback();
@@ -262,6 +294,13 @@ function nineoclock_init(jQuery) {
 			// TODO: Add post to the current post list.
 			nineoclock.displayPosts();
 		})
+	});
+
+	jQuery('#media-reload').on('click', function(event) {
+		jQuery('#loading-mirror').show();
+		nineoclock.loadMedia(nineoclock.currentSite.name, function() {
+			jQuery('#loading-mirror').hide();
+		});
 	});
 
 	jQuery('#topactions').on('click', '.site-display-section', function(event) {
