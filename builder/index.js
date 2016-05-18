@@ -2,10 +2,12 @@
 
 var path = require('path');
 var metalsmith = require('metalsmith');
+var moment = require('moment');
 
 // Metalsmith modules
 var markdown = require('metalsmith-markdown');
 var collections = require('metalsmith-collections');
+var layouts = require('metalsmith-layouts');
 
 // Using forked repo
 var permalinks = require('metalsmith-permalinks');
@@ -16,6 +18,15 @@ var build = function(root, options, callback) {
 	var metadata = {};
 	if (options.hasOwnProperty('metadata'))
 		metadata = options.metadata;
+
+	var template_dir = options.templatePath || __dirname;
+	if (template_dir[0] != '.' && template_dir[0] != '/')
+		template_dir = path.join(__dirname, '..', template_dir);
+
+	if (options.layout)
+		template_dir = path.join(template_dir, options.layout);
+
+	console.log("Using template at '%s'", template_dir);
 
 	var collections_settings = {
 		post: {
@@ -55,6 +66,13 @@ var build = function(root, options, callback) {
 		]
 	};
 
+	var layouts_settings = {
+		engine: 'pug',
+		directory: template_dir,
+		pretty: true,
+		moment: moment
+	};
+
 	//console.log("building site at %s", source);
 
 	metalsmith(root)
@@ -67,7 +85,7 @@ var build = function(root, options, callback) {
 	.use(blog())
 	.use(blog.categories())
 	.use(blog.tags())
-	.use()
+	.use(layouts(layouts_settings))
 	.build(function(err) {
 		if (err) { console.error(err); }
 		callback && callback(err);
