@@ -82,7 +82,6 @@ dispatch.map('POST', '/site/posts/([^/]*)/save', function(req, res) {
 		self(JSON.stringify(data), { 'Content-Type': 'application/json'});
 	};
 
-	console.log("saving post for %s:", siteName);
 	var oldFN = this.fields.post['oldfilename'];
 	var filename = this.fields.post['filename'];
 	var contents = this.fields.post['contents'];

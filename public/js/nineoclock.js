@@ -1,3 +1,9 @@
+/* 9oclock CMS */
+
+function fixedEncodeURI (str) {
+    return encodeURI(str).replace(/%5B/g, '[').replace(/%5D/g, ']');
+}
+
 function nineoclock_init(jQuery) {
 	var nineoclock = {};
 	window.nineoclock = nineoclock;
@@ -82,7 +88,7 @@ function nineoclock_init(jQuery) {
 				line += '<td>' + meta.title + '</td>';
 				line += '<td>' + meta.date + '</td>';
 				line += '<td>';
-				line += '<span class="glyphicon glyphicon-edit post-edit post-action" data-postname="' + postname + '"></span> ';
+				line += '<span class="glyphicon glyphicon-edit post-edit post-action" data-postname="' + postname + '" data-contents="' + fixedEncodeURI(text) + '"></span> ';
 				line += '<span class="glyphicon glyphicon-trash post-delete post-action" data-postname="' + postname + '"></span> ';
 				line += '</td>';
 				line += '</tr>';
@@ -160,6 +166,39 @@ function nineoclock_init(jQuery) {
 		jQuery('#post-title').focus();
 	});
 
+	// Post Edit button click
+	jQuery('#posts-table').on('click', '.post-edit', function(event) {
+		var obj = jQuery(this);
+		var contents = decodeURI(obj.data('contents'));
+		var postname = obj.data('postname');
+		var meta = jsyaml.loadFront(contents);
+
+		var categories = '';
+		var tags = '';
+
+		if (meta.categories)
+			categories = meta['categories'].join(', ');
+
+		if (meta.tags)
+			tegs = meta['tags'].join(', ');
+
+		// Loads and display interface
+		jQuery('#contents .site-section').hide();
+
+		jQuery('#post-title').val(meta['title']);
+		jQuery('#post-contents').val(contents.replace(/^(-{3}(?:\n|\r)([\w\W]+?)-{3})?/,'').trim());
+		jQuery('#post-filename').val(postname);
+		jQuery('#post-oldfilename').val(postname);
+		jQuery('#post-date').val(meta['date']);
+		jQuery('#post-slug').val(meta['slug']);
+		jQuery('#post-categories').val(categories);
+		jQuery('#post-tags').val(tags);
+
+		jQuery('#post-editor').show();
+		jQuery('#post-contents').focus();
+
+	});
+
 	jQuery('#post-reload').on('click', function(event) {
 		jQuery('#loading-mirror').show();
 		nineoclock.loadPosts(nineoclock.currentSite.name, function() {
@@ -181,12 +220,14 @@ function nineoclock_init(jQuery) {
 		var catStrings = jQuery('#post-categories').val().trim();
 		if (catStrings.length > 0) { 
 			contents += catStrings.split(',').map(function(a) { return("- " + a.trim()); }).join('\n');
+			contents += '\n';
 		}
 
 		contents += 'tags:\n';
 		var tagStrings = jQuery('#post-tags').val().trim();
 		if (tagStrings.length > 0) { 
 			contents += tagStrings.split(',').map(function(a) { return("- " + a.trim()); }).join('\n');
+			contents += '\n';
 		}
 
 		contents += '---\n' + jQuery('#post-contents').val();
