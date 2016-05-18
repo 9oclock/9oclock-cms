@@ -4,6 +4,38 @@ function nineoclock_init(jQuery) {
 
 	nineoclock.currentSite = {};
 
+	// Returns a valid date string.
+	// TODO: Fix this mess.
+	var dateString = function(now) {
+		if (!now)
+			now = new Date();
+
+		var aux;
+		var ret = now.getFullYear();
+		ret += '-';
+
+		aux = now.getMonth();
+		ret += (aux.length<2?'0':'') + aux;
+		ret += '-';
+
+		aux = now.getDate();
+		ret += (aux.length<2?'0':'') + aux;
+		ret += ' ';
+
+		aux = now.getHours();
+		ret += (aux.length<2?'0':'') + aux;
+		ret += ':';
+
+		aux = now.getMinutes();
+		ret += (aux.length<2?'0':'') + aux;
+		ret += ':';
+
+		aux = now.getSeconds();
+		ret += (aux.length<2?'0':'') + aux;
+
+		return(ret);
+	};
+
 	nineoclock.updateSites = function() {
 		jQuery.ajax('/sites').done(updateSiteList);
 	};
@@ -123,22 +155,7 @@ function nineoclock_init(jQuery) {
 	jQuery('#post-new').on('click', function(event) {
 		jQuery('#contents .site-section').hide();
 
-		// TODO: This should not be this ugly.
-		var now = new Date();
-		var dateStr = now.getFullYear();
-		dateStr += '-';
-		dateStr += now.getMonth();
-		dateStr += '-';
-		dateStr += now.getDate();
-		dateStr += ' ';
-		dateStr += now.getHours();
-		dateStr += ':';
-		dateStr += now.getMinutes();
-		dateStr += ':';
-		dateStr += now.getSeconds();
-
-
-		jQuery('#post-date').val(dateStr)
+		jQuery('#post-date').val(dateString())
 		jQuery('#post-editor').show();
 		jQuery('#post-title').focus();
 	});
